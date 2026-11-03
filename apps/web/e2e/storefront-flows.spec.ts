@@ -59,6 +59,21 @@ test.describe("Storefront flows", () => {
     await expect(cart.getByText(/empty/i)).toBeVisible();
   });
 
+  test("KAN-4 / FM-BUG-07: minus at quantity 2 reduces to 1 and keeps the item", async ({ page }) => {
+    const cart = await addFirstDishToCart(page);
+
+    await cart.getByRole("button", { name: "Increase quantity" }).click();
+    await expect(cart.locator(".fm-qty-grp p")).toHaveText("2");
+
+    await cart.getByRole("button", { name: "Decrease quantity" }).click();
+    await expect(cart.locator(".cic_root")).toHaveCount(1);
+    await expect(cart.locator(".fm-qty-grp p")).toHaveText("1");
+
+    await cart.getByRole("button", { name: "Decrease quantity" }).click();
+    await expect(cart.locator(".cic_root")).toHaveCount(0);
+    await expect(cart.getByText(/empty/i)).toBeVisible();
+  });
+
   test("delivery shows address fields; takeaway hides them", async ({ page }) => {
     await addFirstDishToCart(page);
     await page.locator("aside.uc-panel").getByRole("link", { name: "Go to checkout" }).click();
