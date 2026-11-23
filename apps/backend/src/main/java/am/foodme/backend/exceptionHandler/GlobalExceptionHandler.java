@@ -1,5 +1,6 @@
 package am.foodme.backend.exceptionHandler;
 
+import io.sentry.Sentry;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleGeneric(Exception ex, HttpServletRequest request) {
+        // This handler resolves the exception before SentryExceptionResolver
+        // (order 1) gets a chance, so report it to GlitchTip explicitly.
+        Sentry.captureException(ex);
         StringWriter sw = new StringWriter();
         ex.printStackTrace(new PrintWriter(sw));
         return build(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request, sw.toString());
